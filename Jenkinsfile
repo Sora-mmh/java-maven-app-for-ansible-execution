@@ -81,6 +81,7 @@ pipeline {
                 }
             }
         }
+        // for DEGUB
         // stage ("execute ansible playbook") {
         //     steps {
         //         script {
