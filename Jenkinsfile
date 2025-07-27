@@ -1,26 +1,61 @@
 pipeline {   
     agent any
+    environment {
+        ANSIBLE_SERVER = "13.61.19.134"
+    }
     stages {
         stage("copy files to ansible server") {
             steps {
                 script {
                     echo "copying all necessary files to ansible control node"
                     sshagent(['ansible-server-key']) {
-                        sh "scp -o StrictHostKeyChecking=no ansible/* ubuntu@13.61.19.134:/home/ubuntu"
+                        sh "scp -o StrictHostKeyChecking=no ansible/* ubuntu@${ANSIBLE_SERVER}:/home/ubuntu"
                         // In case of scp on root user
                         // sh """
-                        //     ssh -o StrictHostKeyChecking=no ubuntu@13.61.19.134 '
+                        //     ssh -o StrictHostKeyChecking=no ubuntu@${ANSIBLE_SERVER} '
                         //     sudo mv /home/ubuntu/* /root/
                         // '
                         // """
                         withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-                            sh 'scp $keyfile ubuntu@13.61.19.134:/home/ubuntu/ssh-key.pem'
+                            sh 'scp $keyfile ubuntu@$ANSIBLE_SERVER:/home/ubuntu/ssh-key.pem'
                         }
                     }
                 }
             }
         }
-        // for DEGUB
+        stage ("execute ansible playbook") {
+            steps {
+                script {
+                    echo "calling ansible playbook to configure ec2 instances" 
+                    def remote = [:]
+                    remote.name = "ansible-server"
+                    remote.host = ANSIBLE_SERVER
+                    remote.allowAnyHosts = true
+
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                        remote.user = user
+                        remote.identityFile = keyfile
+                        sshScript remote: remote, script: "prepare-ansible-server.sh"
+                        sshCommand remote: remote, command: "ansible-playbook  -i inventory_aws_ec2.yaml playbook.yaml"
+                        // sshCommand remote: remote, command: """        
+                        //     # Test inventory parsing
+                        //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
+                        // """
+                        // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
+                        // sshCommand remote: remote, command: """
+                        //     echo 'Checking AWS credentials...'
+                        //     ls -la ~/.aws/ || echo 'No .aws directory'
+                        //     env | grep AWS_ || echo 'No AWS env vars'
+                        // """
+                    }   
+                }
+            }
+        }
+
+
+
+
+        //  ################FOR DEGUB##############
         // stage ("execute ansible playbook") {
         //     steps {
         //         script {
@@ -54,34 +89,8 @@ pipeline {
         //         }
         //     }
         // }
-        stage ("execute ansible playbook") {
-            steps {
-                script {
-                    echo "calling ansible playbook to configure ec2 instances" 
-                    def remote = [:]
-                    remote.name = "ansible-server"
-                    remote.host = "13.61.19.134"
-                    remote.allowAnyHosts = true
 
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-                        remote.user = user
-                        remote.identityFile = keyfile
-                        // sshCommand remote: remote, command: """        
-                        //     # Test inventory parsing
-                        //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
-                        // """
-                        // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
-                        sshCommand remote: remote, command: "ansible-playbook  -i inventory_aws_ec2.yaml playbook.yaml"
-                        // sshCommand remote: remote, command: """
-                        //     echo 'Checking AWS credentials...'
-                        //     ls -la ~/.aws/ || echo 'No .aws directory'
-                        //     env | grep AWS_ || echo 'No AWS env vars'
-                        // """
-                    }   
-                }
-            }
-        }
-        // for DEGUB
+        
         // stage ("execute ansible playbook") {
         //     steps {
         //         script {
