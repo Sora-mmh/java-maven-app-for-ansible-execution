@@ -1,23 +1,24 @@
 ---
 - name: Install Docker
-  hosts: all # aws_ec2 # all # docker_server
-  become: yes
-  # become_user: root
+  hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
   tasks:
-    - name: Make sur Docker is installed
-      yum:  
-        name: docker
-        update_cache: yes
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
         state: present
-    - name: Ensure docker is running
+    - name: Ensure Docker is running
       systemd:
         name: docker
         state: started
 
 - name: Install Docker-compose
-  hosts: all # aws_ec2 # all
-  become: yes
-  become_user: ubuntu
+  hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
   tasks:
     - name: Create docker-compose directory
       file:
@@ -31,5 +32,3 @@
         url: "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-{{remote_arch.stdout}}"
         dest: ~/.docker/cli-plugins/docker-compose
         mode: +x
-
-
