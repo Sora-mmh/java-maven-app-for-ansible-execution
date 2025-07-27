@@ -34,8 +34,8 @@ pipeline {
 
                         sshCommand remote: remote, command: """
                             # Set AWS credentials
-                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                            // export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                            // export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
                             
                             # Ensure correct key permissions
                             chmod 600 /home/ubuntu/ssh-key.pem
