@@ -20,77 +20,62 @@ pipeline {
                 }
             }
         }
-        stage ("execute ansible playbook") {
-            steps {
-                script {
-                    def remote = [:]
-                    remote.name = "ansible-server"
-                    remote.host = "13.61.19.134"
-                    remote.allowAnyHosts = true
-        
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-                        remote.user = user
-                        remote.identityFile = keyfile
-
-                        sshCommand remote: remote, command: """
-                            # Set AWS credentials
-                            // export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                            // export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                            
-                            # Ensure correct key permissions
-                            chmod 600 /home/ubuntu/ssh-key.pem
-                            
-                            # Run playbook with explicit settings
-                            ansible-playbook /home/ubuntu/playbook.yaml \
-                              -i /home/ubuntu/inventory_aws_ec2.yaml \
-                              --private-key /home/ubuntu/ssh-key.pem \
-                              -u ec2-user \
-                              -vvv
-                        """
-                        // sshCommand remote: remote, command: """
-                        //     # Force use of the credentials file
-                        //     export AWS_SHARED_CREDENTIALS_FILE=/home/ubuntu/.aws/credentials
-                            
-                        //     # Debugging commands
-                        //     echo "=== AWS Credentials Path ==="
-                        //     ls -la \$AWS_SHARED_CREDENTIALS_FILE
-                            
-                        //     echo "=== Inventory Test ==="
-                        //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
-                            
-                        //     echo "=== Playbook Execution ==="
-                        //     ansible-playbook /home/ubuntu/playbook.yaml \
-                        //       -i /home/ubuntu/inventory_aws_ec2.yaml \
-                        //       -l tag_Name_ansible_server \
-                        //       -vvv
-                        // """
-                    }
-                }
-            }
-        }
         // stage ("execute ansible playbook") {
         //     steps {
         //         script {
-        //             echo "calling ansible playbook to configure ec2 instances" 
         //             def remote = [:]
         //             remote.name = "ansible-server"
         //             remote.host = "13.61.19.134"
         //             remote.allowAnyHosts = true
-
+        
         //             withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
         //                 remote.user = user
         //                 remote.identityFile = keyfile
-        //                 // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
-        //                 // sshCommand remote: remote, command: "ansible-playbook playbook.yaml"
-        //                 sshCommand remote: remote, command: """
-        //                     echo 'Checking AWS credentials...'
-        //                     ls -la ~/.aws/ || echo 'No .aws directory'
-        //                     env | grep AWS_ || echo 'No AWS env vars'
-        //                 """
+
+        //                 // sshCommand remote: remote, command: """
+        //                 //     # Force use of the credentials file
+        //                 //     export AWS_SHARED_CREDENTIALS_FILE=/home/ubuntu/.aws/credentials
+                            
+        //                 //     # Debugging commands
+        //                 //     echo "=== AWS Credentials Path ==="
+        //                 //     ls -la \$AWS_SHARED_CREDENTIALS_FILE
+                            
+        //                 //     echo "=== Inventory Test ==="
+        //                 //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
+                            
+        //                 //     echo "=== Playbook Execution ==="
+        //                 //     ansible-playbook /home/ubuntu/playbook.yaml \
+        //                 //       -i /home/ubuntu/inventory_aws_ec2.yaml \
+        //                 //       -l tag_Name_ansible_server \
+        //                 //       -vvv
+        //                 // """
         //             }
-                
         //         }
         //     }
         // }
+        stage ("execute ansible playbook") {
+            steps {
+                script {
+                    echo "calling ansible playbook to configure ec2 instances" 
+                    def remote = [:]
+                    remote.name = "ansible-server"
+                    remote.host = "13.61.19.134"
+                    remote.allowAnyHosts = true
+
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                        remote.user = user
+                        remote.identityFile = keyfile
+                        // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
+                        sshCommand remote: remote, command: "ansible-playbook playbook.yaml"
+                        // sshCommand remote: remote, command: """
+                        //     echo 'Checking AWS credentials...'
+                        //     ls -la ~/.aws/ || echo 'No .aws directory'
+                        //     env | grep AWS_ || echo 'No AWS env vars'
+                        // """
+                    }
+                
+                }
+            }
+        }
     }
 } 
