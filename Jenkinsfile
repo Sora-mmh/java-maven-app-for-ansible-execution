@@ -54,57 +54,57 @@ pipeline {
         //         }
         //     }
         // }
-        // stage ("execute ansible playbook") {
-        //     steps {
-        //         script {
-        //             echo "calling ansible playbook to configure ec2 instances" 
-        //             def remote = [:]
-        //             remote.name = "ansible-server"
-        //             remote.host = "13.61.19.134"
-        //             remote.allowAnyHosts = true
-
-        //             withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-        //                 remote.user = user
-        //                 remote.identityFile = keyfile
-        //                 sshCommand remote: remote, command: """        
-        //                     # Test inventory parsing
-        //                     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
-        //                 """
-        //                 // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
-        //                 // sshCommand remote: remote, command: "ansible-playbook playbook.yaml"
-        //                 // sshCommand remote: remote, command: """
-        //                 //     echo 'Checking AWS credentials...'
-        //                 //     ls -la ~/.aws/ || echo 'No .aws directory'
-        //                 //     env | grep AWS_ || echo 'No AWS env vars'
-        //                 // """
-        //             }   
-        //         }
-        //     }
-        // }
         stage ("execute ansible playbook") {
             steps {
                 script {
+                    echo "calling ansible playbook to configure ec2 instances" 
+                    def remote = [:]
+                    remote.name = "ansible-server"
+                    remote.host = "13.61.19.134"
+                    remote.allowAnyHosts = true
+
                     withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-                        sshCommand remote: remote, command: """
-                            # Set explicit environment
-                            cd /home/ubuntu
-                            export ANSIBLE_CONFIG=/home/ubuntu/ansible.cfg
-                            export AWS_SHARED_CREDENTIALS_FILE=/home/ubuntu/.aws/credentials
-                            
-                            # Debug info
-                            echo "=== Current config ==="
-                            ansible-config dump | grep -E 'inventory|hostfile'
-                            
-                            # Execute with full paths
-                            ansible-playbook /home/ubuntu/playbook.yaml \\
-                              -i /home/ubuntu/inventory_aws_ec2.yaml \\
-                              --private-key /home/ubuntu/ssh-key.pem \\
-                              -u ec2-user \\
-                              -vvvv
-                        """
-                     }   
+                        remote.user = user
+                        remote.identityFile = keyfile
+                        // sshCommand remote: remote, command: """        
+                        //     # Test inventory parsing
+                        //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
+                        // """
+                        // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
+                        sshCommand remote: remote, command: "ansible-playbook playbook.yaml"
+                        // sshCommand remote: remote, command: """
+                        //     echo 'Checking AWS credentials...'
+                        //     ls -la ~/.aws/ || echo 'No .aws directory'
+                        //     env | grep AWS_ || echo 'No AWS env vars'
+                        // """
+                    }   
                 }
             }
         }
+        // stage ("execute ansible playbook") {
+        //     steps {
+        //         script {
+        //             withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+        //                 sshCommand remote: remote, command: """
+        //                     # Set explicit environment
+        //                     cd /home/ubuntu
+        //                     export ANSIBLE_CONFIG=/home/ubuntu/ansible.cfg
+        //                     export AWS_SHARED_CREDENTIALS_FILE=/home/ubuntu/.aws/credentials
+                            
+        //                     # Debug info
+        //                     echo "=== Current config ==="
+        //                     ansible-config dump | grep -E 'inventory|hostfile'
+                            
+        //                     # Execute with full paths
+        //                     ansible-playbook /home/ubuntu/playbook.yaml \\
+        //                       -i /home/ubuntu/inventory_aws_ec2.yaml \\
+        //                       --private-key /home/ubuntu/ssh-key.pem \\
+        //                       -u ec2-user \\
+        //                       -vvvv
+        //                 """
+        //              }   
+        //         }
+        //     }
+        // }
     }
 } 
