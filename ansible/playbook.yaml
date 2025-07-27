@@ -17,9 +17,7 @@
 - name: Install Docker-compose
   hosts: all # aws_ec2 # all
   become: yes
-  vars_files:
-    project-vars
-  become_user: "{{linux_name}}"
+  become_user: ubuntu
   tasks:
     - name: Create docker-compose directory
       file:
