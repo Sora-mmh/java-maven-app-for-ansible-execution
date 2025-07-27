@@ -13,10 +13,28 @@ pipeline {
                         //     sudo mv /home/ubuntu/* /root/
                         // '
                         // """
-			withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-			  sh 'scp $keyfile ubuntu@13.61.19.134:/home/ubuntu/ssh-key.pem'
-			}
+                        withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                            sh 'scp $keyfile ubuntu@13.61.19.134:/home/ubuntu/ssh-key.pem'
+                        }
                     }
+                }
+            }
+        }
+        stage ("execute ansible playbook") {
+            steps {
+                script {
+                    echo "calling ansible playbook to configure ec2 instances" 
+                    def remote = [:]
+                    remote.name = "ansible-server"
+                    remote.host = "13.61.19.134"
+                    remote.allowAnyHosts = true
+
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                        remote.user = user
+                        remote.identityFile = keyfile
+                        sshCommand remote: remote, command: "ls -l"
+                    }
+                
                 }
             }
         }
