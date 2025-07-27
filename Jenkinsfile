@@ -1,41 +1,21 @@
-def gv
-
 pipeline {   
     agent any
-    tools {
-        maven 'Maven'
-    }
     stages {
-        stage("init") {
+        stage("copy files to ansible server") {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    echo "copying all necessary files to ansible control node"
+                    sshagent(['ansible-server-key']) {
+                        sh "scp -o StrictHostKeyChecking=no ansible/* ubuntu@13.61.19.134:/home/ubuntu"
+                        // In case of scp on root user
+                        // sh """
+                        //     ssh -o StrictHostKeyChecking=no ubuntu@13.61.19.134 '
+                        //     sudo mv /home/ubuntu/* /root/
+                        // '
+                        // """
+                    }
                 }
             }
         }
-        stage("build jar") {
-            steps {
-                script {
-                    gv.buildJar()
-
-                }
-            }
-        }
-
-        stage("build image") {
-            steps {
-                script {
-                    gv.buildImage()
-                }
-            }
-        }
-
-        stage("deploy") {
-            steps {
-                script {
-                    gv.deployApp()
-                }
-            }
-        }               
     }
 } 
