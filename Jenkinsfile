@@ -14,7 +14,7 @@ pipeline {
                         // '
                         // """
 			withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-			  sh "scp ${keyfile} ubuntu@13.61.19.134:/home/ubuntu/ssh-key.pem"
+			  sh 'scp $keyfile ubuntu@13.61.19.134:/home/ubuntu/ssh-key.pem'
 			}
                     }
                 }
