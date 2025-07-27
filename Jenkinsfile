@@ -71,7 +71,7 @@ pipeline {
                         //     ansible-inventory -i /home/ubuntu/inventory_aws_ec2.yaml --graph
                         // """
                         // sshCommand remote: remote, command: "cat /home/ubuntu/inventory_aws_ec2.yaml"
-                        sshCommand remote: remote, command: "ansible-playbook playbook.yaml"
+                        sshCommand remote: remote, command: "ansible-playbook  -i inventory_aws_ec2.yaml playbook.yaml"
                         // sshCommand remote: remote, command: """
                         //     echo 'Checking AWS credentials...'
                         //     ls -la ~/.aws/ || echo 'No .aws directory'
